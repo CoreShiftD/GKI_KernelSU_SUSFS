@@ -3,7 +3,6 @@ description: 'Reads Makefile sublevel and composes FILE_NAME'
 inputs:
   variant:
     required: true
-    type: string
 outputs:
   file_name:
     value: ${{ steps.extract.outputs.file_name }}

@@ -48,7 +48,6 @@ jobs:
         kernel_version: ${{ inputs.kernel_version }}
 
     - name: Free Disk Space
-      if: true
       uses: endersonmenezes/free-disk-space@v3  # Use @main for latest, @v3 for stable
       with:
         remove_android: true
@@ -133,7 +132,10 @@ jobs:
       if: contains(inputs.feature_set, 'DS') || inputs.feature_set == 'FULL'
       uses: ./.github/actions/droidspaces
       with:
+        android_version: ${{ steps.parse.outputs.android_version }}
         kernel_version: ${{ steps.parse.outputs.kernel_version }}
+        os_patch_level: ${{ steps.parse.outputs.os_patch_level }}
+        sublevel: ${{ steps.extract.outputs.sublevel }}
 
     - name: Setup Misc Configs
       uses: ./.github/actions/misc
@@ -153,7 +155,7 @@ jobs:
         kernel_version: ${{ steps.parse.outputs.kernel_version }}
 
     - name: Apply ABI Compare Bypass
-      if: false
+      if: ${{ inputs.variant == '__disabled__' }}
       working-directory: ${{ github.workspace }}/kernel
       run: |
         # ABI compare bypass per kernel/android version

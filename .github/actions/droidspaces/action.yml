@@ -19,7 +19,6 @@ runs:
   steps:
     - name: Apply the SYSVIPC kABI fix
       shell: bash
-      if: true
       working-directory: ${{ github.workspace }}/kernel/common
       run: |
         if [ "${{ inputs.kernel_version }}" == "6.12" ]; then
@@ -33,7 +32,6 @@ runs:
 
     - name: Enable Configs
       shell: bash
-      if: true
       working-directory: ${{ github.workspace }}/kernel
       run: |
         cat >> "${{ github.workspace }}/wild_gki.fragment" << 'EOF'
@@ -53,7 +51,7 @@ runs:
         EOF
 
     - name: Apply Android 15 6.6 Fixes
-      if: false
+      if: ${{ inputs.kernel_version == '__disabled__' }}
       shell: bash
       working-directory: ${{ github.workspace }}/kernel/common
       run: |

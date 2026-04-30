@@ -3,7 +3,6 @@ description: 'Applies module version check bypass and verifies it'
 inputs:
   kernel_version:
     required: true
-    type: string
 
 runs:
   using: composite

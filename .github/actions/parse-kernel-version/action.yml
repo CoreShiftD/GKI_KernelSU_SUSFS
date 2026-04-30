@@ -3,7 +3,6 @@ description: 'Parses input kernel_version into kernel/android/patch parts and ex
 inputs:
   kernel_version:
     required: true
-    type: string
 outputs:
   android_version:
     value: ${{ steps.parse.outputs.android_version }}

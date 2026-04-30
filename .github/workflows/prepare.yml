@@ -36,6 +36,11 @@ on:
         required: false
         type: boolean
         default: false
+      require_boot_sign_key:
+        description: "Require BOOT_SIGN_KEY for release boot image signing"
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   generate-matrix:
@@ -93,4 +98,5 @@ jobs:
       susfs_commit: ${{ inputs.susfs_commit }}
       feature_set: ${{ inputs.feature_set }}
       use_repo: ${{ inputs.use_repo }}
+      require_boot_sign_key: ${{ inputs.require_boot_sign_key }}
     secrets: inherit

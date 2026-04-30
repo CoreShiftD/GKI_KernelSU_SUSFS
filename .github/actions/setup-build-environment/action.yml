@@ -5,6 +5,9 @@ inputs:
     required: false
   anykernel_commit:
     required: false
+  require_boot_sign_key:
+    required: false
+    default: "false"
 
 runs:
   using: composite
@@ -72,15 +75,22 @@ runs:
         echo "UNPACK_BOOTIMG=$GITHUB_WORKSPACE/mkbootimg/unpack_bootimg.py" >> "$GITHUB_ENV"
         echo "BOOT_SIGN_KEY_PATH=$GITHUB_WORKSPACE/kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem" >> "$GITHUB_ENV"
 
-        mkdir -p "$GITHUB_WORKSPACE/kernel-build-tools/linux-x86/share/avb"
-        if [ -z "${BOOT_SIGN_KEY:-}" ]; then
-          echo "::error title=Missing BOOT_SIGN_KEY::BOOT_SIGN_KEY secret is required to sign boot images."
-          exit 1
-        fi
-
         KEY_PATH="$GITHUB_WORKSPACE/kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem"
-        printf '%s' "$BOOT_SIGN_KEY" > "$KEY_PATH"
-        if ! head -n 1 "$KEY_PATH" | grep -q 'BEGIN'; then
-          printf '%s' "$BOOT_SIGN_KEY" | base64 -d > "$KEY_PATH"
+        REQUIRE_BOOT_SIGN_KEY="${{ inputs.require_boot_sign_key }}"
+
+        if [ -n "${BOOT_SIGN_KEY:-}" ]; then
+          mkdir -p "$(dirname "$KEY_PATH")"
+          printf '%s' "$BOOT_SIGN_KEY" > "$KEY_PATH"
+          if ! head -n 1 "$KEY_PATH" | grep -q 'BEGIN'; then
+            printf '%s' "$BOOT_SIGN_KEY" | base64 -d > "$KEY_PATH"
+          fi
+        elif [ "$REQUIRE_BOOT_SIGN_KEY" = "true" ]; then
+          echo "::error title=Missing BOOT_SIGN_KEY::BOOT_SIGN_KEY secret is required for release boot image signing."
+          exit 1
+        elif [ ! -s "$KEY_PATH" ]; then
+          echo "::error title=Missing boot signing key::BOOT_SIGN_KEY is unset and the AOSP test key was not found at $KEY_PATH."
+          exit 1
+        else
+          echo "BOOT_SIGN_KEY is unset; using the AOSP test key from kernel-build-tools."
         fi
         chmod 600 "$KEY_PATH"

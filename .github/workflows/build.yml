@@ -30,6 +30,10 @@ on:
       use_repo:
         required: false
         type: boolean
+      require_boot_sign_key:
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build-gki:
@@ -74,6 +78,7 @@ jobs:
       with:
         patches_commit: ${{ inputs.patches_commit }}
         anykernel_commit: ${{ inputs.anykernel_commit }}
+        require_boot_sign_key: ${{ inputs.require_boot_sign_key }}
           
     - name: Download Kernel Repository
       uses: ./.github/actions/download-kernel

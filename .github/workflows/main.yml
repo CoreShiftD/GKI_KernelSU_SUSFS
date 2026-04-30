@@ -99,6 +99,7 @@ jobs:
       feature_set: ${{ inputs.feature_set || 'FULL' }}
       variant: ${{ inputs.variant || 'Normal' }}
       use_repo: ${{ inputs.use_repo }}
+      require_boot_sign_key: ${{ inputs.release_type != 'Action' }}
     secrets: inherit
 
   build-a12-5-10:
@@ -114,6 +115,7 @@ jobs:
       feature_set: ${{ inputs.feature_set || 'FULL' }}
       variant: ${{ inputs.variant || 'Normal' }}
       use_repo: ${{ inputs.use_repo }}
+      require_boot_sign_key: ${{ inputs.release_type != 'Action' }}
     secrets: inherit
 
   build-a13-5-10:
@@ -129,6 +131,7 @@ jobs:
       feature_set: ${{ inputs.feature_set || 'FULL' }}
       variant: ${{ inputs.variant || 'Normal' }}
       use_repo: ${{ inputs.use_repo }}
+      require_boot_sign_key: ${{ inputs.release_type != 'Action' }}
     secrets: inherit
 
   build-a13-5-15:
@@ -144,6 +147,7 @@ jobs:
       feature_set: ${{ inputs.feature_set || 'FULL' }}
       variant: ${{ inputs.variant || 'Normal' }}
       use_repo: ${{ inputs.use_repo }}
+      require_boot_sign_key: ${{ inputs.release_type != 'Action' }}
     secrets: inherit
 
   build-a14-5-15:
@@ -159,6 +163,7 @@ jobs:
       feature_set: ${{ inputs.feature_set || 'FULL' }}
       variant: ${{ inputs.variant || 'Normal' }}
       use_repo: ${{ inputs.use_repo }}
+      require_boot_sign_key: ${{ inputs.release_type != 'Action' }}
     secrets: inherit
 
   build-a14-6-1:
@@ -174,6 +179,7 @@ jobs:
       feature_set: ${{ inputs.feature_set || 'FULL' }}
       variant: ${{ inputs.variant || 'Normal' }}
       use_repo: ${{ inputs.use_repo }}
+      require_boot_sign_key: ${{ inputs.release_type != 'Action' }}
     secrets: inherit
 
   build-a15-6-6:
@@ -189,6 +195,7 @@ jobs:
       feature_set: ${{ inputs.feature_set || 'FULL' }}
       variant: ${{ inputs.variant || 'Normal' }}
       use_repo: ${{ inputs.use_repo }}
+      require_boot_sign_key: ${{ inputs.release_type != 'Action' }}
     secrets: inherit
 
   build-a16-6-12:
@@ -204,6 +211,7 @@ jobs:
       feature_set: ${{ inputs.feature_set || 'FULL' }}
       variant: ${{ inputs.variant || 'Normal' }}
       use_repo: ${{ inputs.use_repo }}
+      require_boot_sign_key: ${{ inputs.release_type != 'Action' }}
     secrets: inherit
 
   rej:

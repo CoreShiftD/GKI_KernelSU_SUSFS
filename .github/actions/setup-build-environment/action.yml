@@ -53,10 +53,19 @@ runs:
           git clone https://github.com/WildKernels/AnyKernel3.git -b gki-2.0 "$GITHUB_WORKSPACE/AnyKernel3"
         fi
 
-        AOSP_MIRROR=https://android.googlesource.com
-        BRANCH=main-kernel-2025
-        git clone $AOSP_MIRROR/kernel/prebuilts/build-tools -b $BRANCH --depth 1 kernel-build-tools
-        git clone $AOSP_MIRROR/platform/system/tools/mkbootimg -b $BRANCH --depth 1 mkbootimg
+        AOSP_MIRROR="https://android.googlesource.com"
+        BRANCH="main-kernel-2025"
+        BUILD_TOOLS_BRANCH="${BUILD_TOOLS_BRANCH:-$BRANCH}"
+        MKBOOTIMG_BRANCH="${MKBOOTIMG_BRANCH:-main}"
+
+        cd "$GITHUB_WORKSPACE"
+        rm -rf kernel-build-tools mkbootimg
+
+        echo "Cloning ${AOSP_MIRROR}/kernel/prebuilts/build-tools branch ${BUILD_TOOLS_BRANCH}"
+        git clone "${AOSP_MIRROR}/kernel/prebuilts/build-tools" -b "$BUILD_TOOLS_BRANCH" --depth 1 kernel-build-tools
+
+        echo "Cloning ${AOSP_MIRROR}/platform/system/tools/mkbootimg branch ${MKBOOTIMG_BRANCH}"
+        git clone "${AOSP_MIRROR}/platform/system/tools/mkbootimg" -b "$MKBOOTIMG_BRANCH" --depth 1 mkbootimg
 
         echo "AVBTOOL=$GITHUB_WORKSPACE/kernel-build-tools/linux-x86/bin/avbtool" >> "$GITHUB_ENV"
         echo "MKBOOTIMG=$GITHUB_WORKSPACE/mkbootimg/mkbootimg.py" >> "$GITHUB_ENV"
@@ -65,6 +74,7 @@ runs:
 
         mkdir -p "$GITHUB_WORKSPACE/kernel-build-tools/linux-x86/share/avb"
         if [ -z "${BOOT_SIGN_KEY:-}" ]; then
+          echo "::error title=Missing BOOT_SIGN_KEY::BOOT_SIGN_KEY secret is required to sign boot images."
           exit 1
         fi
 

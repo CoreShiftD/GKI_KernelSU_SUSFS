@@ -36,17 +36,33 @@ runs:
         fi
 
         echo "[INFO] Checking pid_namespace.o build rule..."
-        cd "$GITHUB_WORKSPACE/kernel/common"
-        if grep -Eq '^[[:space:]]*obj-\$\(CONFIG_PID_NS\)[[:space:]]*\+?=.*pid_namespace\.o' kernel/Makefile; then
-          echo "[OK] pid_namespace.o is gated by CONFIG_PID_NS."
-        else
-          if grep -Eq '^[[:space:]]*obj-[ym][[:space:]]*\+?=.*pid_namespace\.o' kernel/Makefile; then
-            echo "[FIX] Moving pid_namespace.o behind CONFIG_PID_NS."
-            perl -0pi -e 's/^([ \t]*obj-[ym][ \t]*(?:\+?=|:=)[^\n]*?)\bpid_namespace\.o\b[ \t]*/$1/mg; s/^[ \t]*obj-[ym][ \t]*(?:\+?=|:=)[ \t]*\n//mg' kernel/Makefile
-          fi
-          printf '\nobj-$(CONFIG_PID_NS) += pid_namespace.o\n' >> kernel/Makefile
+        KERNEL_MAKEFILE="$GITHUB_WORKSPACE/kernel/common/kernel/Makefile"
+        echo "[INFO] Kernel Makefile: $KERNEL_MAKEFILE"
+        if [ ! -f "$KERNEL_MAKEFILE" ]; then
+          echo "::error title=Missing kernel Makefile::Expected kernel Makefile at $KERNEL_MAKEFILE"
+          exit 1
         fi
-        grep -n 'pid_namespace\.o' kernel/Makefile || true
+
+        echo "[INFO] pid_namespace.o rules before patch:"
+        grep -n 'pid_namespace\.o' "$KERNEL_MAKEFILE" || true
+
+        perl -0pi -e 's/^([ \t]*obj-[ym][ \t]*(?:\+?=|:=)[^\n]*?)\bpid_namespace\.o\b[ \t]*/$1/mg; s/^[ \t]*obj-[ym][ \t]*(?:\+?=|:=)[ \t]*\n//mg; s/^([ \t]*obj-\$\(CONFIG_PID_NS\)[ \t]*(?:\+?=|:=)[^\n]*?)\bpid_namespace\.o\b[ \t]*/$1/mg; s/^[ \t]*obj-\$\(CONFIG_PID_NS\)[ \t]*(?:\+?=|:=)[ \t]*\n//mg' "$KERNEL_MAKEFILE"
+        printf '\nobj-$(CONFIG_PID_NS) += pid_namespace.o\n' >> "$KERNEL_MAKEFILE"
+
+        echo "[INFO] pid_namespace.o rules after patch:"
+        grep -n 'pid_namespace\.o' "$KERNEL_MAKEFILE" || true
+
+        if grep -En '^[[:space:]]*obj-[ym][[:space:]]*(\+?=|:=).*pid_namespace\.o' "$KERNEL_MAKEFILE"; then
+          echo "::error title=Invalid pid_namespace.o rule::pid_namespace.o is still present in an unconditional obj-y/obj-m rule."
+          exit 1
+        fi
+
+        PID_NS_RULE_COUNT="$(grep -Ec '^[[:space:]]*obj-\$\(CONFIG_PID_NS\)[[:space:]]*\+=[[:space:]]*pid_namespace\.o[[:space:]]*$' "$KERNEL_MAKEFILE")"
+        if [ "$PID_NS_RULE_COUNT" -ne 1 ]; then
+          echo "::error title=Invalid pid_namespace.o rule::Expected exactly one obj-\$(CONFIG_PID_NS) += pid_namespace.o rule, found $PID_NS_RULE_COUNT."
+          exit 1
+        fi
+        echo "[OK] pid_namespace.o is gated by CONFIG_PID_NS."
         
 
         echo "[INFO] Checking for android15 + kernel 6.6 include fix..."

@@ -34,10 +34,23 @@ runs:
         else
           echo "[SKIP] GLIBC version < 2.38, skipping Makefile fix."
         fi
+
+        echo "[INFO] Checking pid_namespace.o build rule..."
+        cd "$GITHUB_WORKSPACE/kernel/common"
+        if grep -Eq '^[[:space:]]*obj-\$\(CONFIG_PID_NS\)[[:space:]]*\+?=.*pid_namespace\.o' kernel/Makefile; then
+          echo "[OK] pid_namespace.o is gated by CONFIG_PID_NS."
+        else
+          if grep -Eq '^[[:space:]]*obj-[ym][[:space:]]*\+?=.*pid_namespace\.o' kernel/Makefile; then
+            echo "[FIX] Moving pid_namespace.o behind CONFIG_PID_NS."
+            perl -0pi -e 's/^([ \t]*obj-[ym][ \t]*(?:\+?=|:=)[^\n]*?)\bpid_namespace\.o\b[ \t]*/$1/mg; s/^[ \t]*obj-[ym][ \t]*(?:\+?=|:=)[ \t]*\n//mg' kernel/Makefile
+          fi
+          printf '\nobj-$(CONFIG_PID_NS) += pid_namespace.o\n' >> kernel/Makefile
+        fi
+        grep -n 'pid_namespace\.o' kernel/Makefile || true
         
 
         echo "[INFO] Checking for android15 + kernel 6.6 include fix..."
-        if [ "${{ inputs.android_version }}" = "android15" && "${{ inputs.kernel_version }}" = "6.6" ]; then
+        if [[ "${{ inputs.android_version }}" == "android15" && "${{ inputs.kernel_version }}" == "6.6" ]]; then
           echo "[MATCH] android15 + 6.6, checking for fs.h include."
           cd "$GITHUB_WORKSPACE/kernel/common"
           if ! grep -qxF '#include <trace/hooks/fs.h>' ./fs/namespace.c; then
